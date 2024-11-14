@@ -25,19 +25,16 @@ class UserController extends Controller
         return $this->respondWithSuccess($user);
     }
 
-    // Créer un nouvel utilisateur
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
+            'email' => 'required|string|email|max:320|unique:users',
+            'password' => 'required|string|min:8|max:60|confirmed',
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
+            'password' => Hash::make($request->password),
         ]);
 
         return $this->respondWithSuccess($user, 'Utilisateur créé avec succès', 201);

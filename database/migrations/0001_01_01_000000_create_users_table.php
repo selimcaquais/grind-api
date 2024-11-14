@@ -11,32 +11,32 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Création de la table users
+        // Creation of users table 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('email')->unique(); // Remplacer 'name' par 'email' si c'est ce qui correspond
+            $table->string('email',320)->unique();
             $table->string('password');
             $table->timestamp('registration_date');
             $table->integer('user_streak')->default(0);
             $table->timestamps(0);
         });
 
-        // Création de la table tasks
+        // Creation of tasks table
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->integer('iteration_max');
             $table->integer('streak')->default(0);
             $table->json('days');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Clé étrangère vers users
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Foreign key to users
             $table->timestamps(0);
         });
 
-        // Création de la table realisations
+        // Creation of realisation table
         Schema::create('realisations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Clé étrangère vers users
-            $table->foreignId('task_id')->constrained('tasks')->onDelete('cascade'); // Clé étrangère vers tasks
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Foreign key to users
+            $table->foreignId('task_id')->constrained('tasks')->onDelete('cascade'); // Foreign key to tasks
             $table->timestamp('date');
             $table->integer('iteration');
             $table->integer('iteration_max');
