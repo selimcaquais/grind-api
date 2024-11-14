@@ -10,7 +10,12 @@ class TaskController extends Controller
     // Récupérer toutes les tâches
     public function index()
     {
-        $tasks = Task::all();
+        // Get auth user
+        $user = auth()->user();
+
+        // Get task of the users
+        $tasks = Task::where('user_id', $user->id)->get();
+
         return $this->respondWithSuccess($tasks);
     }
 
@@ -26,15 +31,19 @@ class TaskController extends Controller
         return $this->respondWithSuccess($task);
     }
 
-    // Créer une nouvelle tâche
+    // Create new task
     public function store(Request $request)
-    {
+    {  
+        // set streak to 0 and user_id to the user auth
+        $request['streak'] = 0;
+        $request['user_id'] = auth()->user()->id;
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'iteration_max' => 'required|integer|min:1',
             'streak' => 'required|integer|min:0',
-            'days' => 'required|array', // Assure-toi que c'est un tableau
-            'days.*' => 'integer|min:1|max:7', // Validation des jours (entre 1 et 7)
+            'days' => 'required|array', // Is Array ?
+            'days.*' => 'integer|min:1|max:7', // Validation of the days
             'user_id' => 'required|exists:users,id',
         ]);
 

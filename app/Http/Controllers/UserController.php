@@ -6,23 +6,24 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    // Récupérer tous les utilisateurs
+    // Get all users
     public function index()
     {
         $users = User::all();
         return $this->respondWithSuccess($users);
     }
 
-    // Récupérer un utilisateur spécifique
+    // Get one specific user
     public function show($id)
     {
         $user = User::find($id);
 
-        if (!$user) {
-            return $this->respondWithError('Utilisateur non trouvé', 404);
+        // Check if the user can have access to this ressource
+        if (auth()->user()->id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        } else {
+            return $this->respondWithSuccess($user);
         }
-
-        return $this->respondWithSuccess($user);
     }
 
     public function store(Request $request)
@@ -40,7 +41,7 @@ class UserController extends Controller
         return $this->respondWithSuccess($user, 'Utilisateur créé avec succès', 201);
     }
 
-    // Mettre à jour un utilisateur existant
+    // Udpate user
     public function update(Request $request, $id)
     {
         $user = User::find($id);

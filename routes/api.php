@@ -14,7 +14,7 @@ Route::post('register', [AuthController::class, 'register']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
-    Route::resource('users', UserController::class);
-    Route::resource('tasks', TaskController::class);
-    Route::resource('realisations', RealisationController::class);
+    Route::apiResource('users', UserController::class);
+    Route::apiResource('tasks', TaskController::class);
+    Route::apiResource('realisations', RealisationController::class);
 });
