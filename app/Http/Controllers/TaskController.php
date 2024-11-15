@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use App\Models\Realisation;
 
 class TaskController extends Controller
 {
@@ -34,22 +36,48 @@ class TaskController extends Controller
     // Create new task
     public function store(Request $request)
     {  
-        // set streak to 0 and user_id to the user auth
-        $request['streak'] = 0;
-        $request['user_id'] = auth()->user()->id;
+        try {
+            // set streak to 0 and user_id to the user auth
+            $user = auth()->user();
+            $request['streak'] = 0;
+            $request['user_id'] = $user->id;
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'iteration_max' => 'required|integer|min:1',
-            'streak' => 'required|integer|min:0',
-            'days' => 'required|array', // Is Array ?
-            'days.*' => 'integer|min:1|max:7', // Validation of the days
-            'user_id' => 'required|exists:users,id',
-        ]);
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'iteration_max' => 'required|integer|min:1',
+                'streak' => 'required|integer|min:0',
+                'days' => 'required|array', // Is Array ?
+                'days.*' => 'integer|min:1|max:7', // Validation of the days
+                'user_id' => 'required|exists:users,id',
+            ]);
 
-        $task = Task::create($validated);
+            // return $currentDateTime;
+            $currentDateTime = Carbon::now($user->timezone);
 
-        return $this->respondWithSuccess($task, 'Tâche créée avec succès', 201);
+            $task = Task::create($validated);
+
+            $realisation = Realisation::create([
+                'user_id' => $user->id,
+                'task_id' => $task->id,
+                'date' => $currentDateTime,
+                'iteration' => 0,
+                'iteration_max' => $task->iteration_max,
+                'streak'=> 0,
+            ]);
+
+            return $this->respondWithSuccess($task, 'Tâche créée avec succès', 201);
+
+        } catch (ValidationException $e) {
+            // Validation error 422
+            return response()->json([
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            // Error management
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // Mettre à jour une tâche existante

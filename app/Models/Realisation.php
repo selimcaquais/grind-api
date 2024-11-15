@@ -20,7 +20,7 @@ class Realisation extends Model
         'task_id',
         'date',
         'iteration',
-        'iterationMax',
+        'iteration_max',
         'streak'
     ];
 

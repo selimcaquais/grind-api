@@ -20,5 +20,6 @@ class User extends Model implements Authenticatable
         'password',
         'registration_date',
         'user_streak',
+        'timezone',
     ];
 }

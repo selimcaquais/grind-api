@@ -17,6 +17,7 @@ class AuthController extends Controller
             $request->validate([
                 'email' => 'required|string|email|max:320|unique:users',
                 'password' => 'required|string|min:8|max:60',
+                'timezone' => 'required|string',
             ]);
 
             // Creation of the user if validation check
@@ -24,6 +25,7 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'registration_date' => now(),
+                'timezone' => $request->timezone,
             ]);
 
             // Create acess_token
