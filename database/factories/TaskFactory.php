@@ -12,13 +12,13 @@ class TaskFactory extends Factory
 
     public function definition()
     {
-        $days = $this->faker->randomElements([1, 2, 3, 4, 5, 6, 7], $this->faker->numberBetween(1, 7));
+        $days = $this->faker->randomElements([0, 1, 2, 3, 4, 5, 6], $this->faker->numberBetween(1, 7));
         sort($days);
         return [
             'name' => $this->faker->word(),
             'iteration_max' => $this->faker->numberBetween(1, 10), 
             'streak' => $this->faker->numberBetween(0, 100),
-            'days' => json_encode($days),
+            'days' => $days,
             'user_id' => User::factory(),
         ];
     }

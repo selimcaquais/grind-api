@@ -16,7 +16,7 @@ class RealisationFactory extends Factory
         return [
             'user_id' => User::factory(),
             'task_id' => Task::factory(),
-            'date' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'date' => $this->faker->dateTimeBetween('-1 month', 'now')->format('Y-m-d'),
             'iteration' => $this->faker->numberBetween(1, 10),
             'iteration_max' => $this->faker->numberBetween(1, 10),
             'streak' => $this->faker->numberBetween(0, 100),

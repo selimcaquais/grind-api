@@ -9,8 +9,15 @@ class UserController extends Controller
     // Get all users
     public function index()
     {
-        $users = User::all();
-        return $this->respondWithSuccess($users);
+        $user = auth()->user();
+
+        // modify with (if admin) when it's created;
+        if ($user->id == 11){
+            $users = User::all();
+            return $this->respondWithSuccess($users);
+        } else {
+            return $this->respondWithError('Unauthorized',401);
+        }
     }
 
     // Get one specific user

@@ -10,7 +10,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $today = Carbon::now($user->timezone)->toDateString();
+        $today = Carbon::now($user->timezone)->toDateString(); // get time and day by the timzone of the user
         
         $realisations = Realisation::where('user_id', $user->id)
                                     ->whereDate('date', $today)

@@ -38,7 +38,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Foreign key to users
             $table->foreignId('task_id')->constrained('tasks')->onDelete('cascade'); // Foreign key to tasks
-            $table->timestamp('date');
+            $table->date('date');
             $table->integer('iteration')->default(0);
             $table->integer('iteration_max');
             $table->integer('streak')->default(0);
