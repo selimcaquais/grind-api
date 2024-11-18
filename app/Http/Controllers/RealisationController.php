@@ -8,57 +8,37 @@ use Illuminate\Http\Request;
 
 class RealisationController extends Controller
 {
-    // Créer une nouvelle réalisation pour une tâche spécifique
-    public function store(Request $request, $taskId)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'date' => 'required|date',
-            'iteration' => 'required|integer',
-            'iteration_max' => 'required|integer',
-            'streak' => 'required|integer',
-        ]);
+    // update a realisation
+    public function update(Request $request, $id){
+        try {
+            $user = auth()->user();
+            $realisation = Realisation::find($id);
+            // check if the user trying to modify the realisation own them
+            if ($user->id == $realisation->user_id){
 
-        $task = Task::findOrFail($taskId);
+                $validated = $request->validate([
+                    'iteration' => 'required|integer|min:0'
+                ]);
 
-        // Créer la réalisation
-        $realisation = Realisation::create([
-            'user_id' => $validated['user_id'],
-            'task_id' => $task->id,
-            'date' => $validated['date'],
-            'iteration' => $validated['iteration'],
-            'iteration_max' => $validated['iterationMax'],
-            'streak' => $validated['streak'],
-        ]);
+                // if the iteration given is above the max, we prevent it by giving it the max value
+                if ($validated['iteration'] > $realisation->iteration_max){
+                    $validated['iteration'] = $realisation->iteration_max;
+                }
 
-        return $this->respondWithSuccess($realisation, 'Réalisation créée avec succès');
-    }
+                $realisation->update($validated);
+                return $this->respondWithSuccess($realisation, 'Realisation mise à jour avec succès');
+            }
 
-    // Afficher toutes les réalisations d'une tâche spécifique
-    public function index($taskId)
-    {
-        $task = Task::findOrFail($taskId);
-
-        // Récupérer toutes les réalisations de la tâche
-        $realisations = $task->realisations;
-
-        return $this->respondWithSuccess($realisations, 'Liste des réalisations');
-    }
-
-    // Afficher une réalisation spécifique
-    public function show($realisationId)
-    {
-        $realisation = Realisation::findOrFail($realisationId);
-
-        return $this->respondWithSuccess($realisation, 'Réalisation récupérée');
-    }
-
-    // Supprimer une réalisation
-    public function destroy($realisationId)
-    {
-        $realisation = Realisation::findOrFail($realisationId);
-        $realisation->delete();
-
-        return $this->respondWithSuccess([], 'Réalisation supprimée');
-    }
+        } catch (ValidationException $e) {
+            // Validation error 422
+            return response()->json([
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            // Error management
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }  
 }

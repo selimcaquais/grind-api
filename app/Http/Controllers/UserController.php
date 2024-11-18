@@ -71,14 +71,20 @@ class UserController extends Controller
     // Supprimer un utilisateur
     public function destroy($id)
     {
-        $user = User::find($id);
-
-        if (!$user) {
+        $user = auth()->user();
+        $userToDelete = User::find($id);
+        
+        if (!$userToDelete) {
             return $this->respondWithError('Utilisateur non trouvé', 404);
         }
 
-        $user->delete();
-
-        return $this->respondWithSuccess(null, 'Utilisateur supprimé avec succès');
+        if ($user->id == $userToDelete->id){
+    
+            $userToDelete->delete();
+    
+            return $this->respondWithSuccess(null, 'Utilisateur supprimé avec succès');
+        } else {
+            return $this->respondWithError("Don't try to delete other users", 401);
+        }   
     }
 }
