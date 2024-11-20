@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\UserTokenController;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -31,21 +33,6 @@ class UserController extends Controller
         } else {
             return $this->respondWithSuccess($user);
         }
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'email' => 'required|string|email|max:320|unique:users',
-            'password' => 'required|string|min:8|max:60|confirmed',
-        ]);
-
-        $user = User::create([
-            'email' => $validated['email'],
-            'password' => Hash::make($request->password),
-        ]);
-
-        return $this->respondWithSuccess($user, 'Utilisateur créé avec succès', 201);
     }
 
     // Udpate user
@@ -77,7 +64,7 @@ class UserController extends Controller
         if (!$userToDelete) {
             return $this->respondWithError('Utilisateur non trouvé', 404);
         }
-
+        
         if ($user->id == $userToDelete->id){
     
             $userToDelete->delete();
@@ -86,5 +73,50 @@ class UserController extends Controller
         } else {
             return $this->respondWithError("Don't try to delete other users", 401);
         }   
+    }
+
+    public function passwordOrEmailChange(Request $request){
+
+       try{
+            $tokenAndEmail = urldecode($request->token);
+
+            //explode email and token
+            list($resetPasswordOrEmailToken, $decryptedEmail) = explode('&&', $tokenAndEmail);
+
+            // decrypted email
+            // $data = base64_decode($emailCrypted);
+            // $iv = substr($data, 0, openssl_cipher_iv_length('aes-256-cbc'));
+            // $ciphertext = substr($data, openssl_cipher_iv_length('aes-256-cbc'));
+            // $decryptedEmail = openssl_decrypt($ciphertext, 'aes-256-cbc', env('MAIL_KEY'), 0, $iv);
+
+            $user = User::where('email', $decryptedEmail)->first();
+
+            $verifyToken = UserTokenController::verifyToken($resetPasswordOrEmailToken, $decryptedEmail);
+
+            if ($verifyToken == 200) {
+                if($request->type == "password"){
+                    $user->password = Hash::make($request->data);
+                    $user->save();
+                } elseif ($request->type == "email"){
+                    $request->validate(['data' => 'required|string|email']);
+                    $user->email = $request->data;
+                    $user->save();
+                }
+                return $this->respondWithSuccess('Changement done', 200);
+            } else {
+                return $this->respondWithError("Error while change your information",400);
+            }
+
+        } catch (ValidationException $e) {
+            // Validation error 422
+            return response()->json([
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            // Error management
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('user_streak')->default(0);
             $table->timestamps(0);
             $table->string('timezone');
+            $table->json('user_token_modification')->nullable();
         });
 
         // Creation of tasks table

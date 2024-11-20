@@ -21,16 +21,19 @@ class TaskController extends Controller
         return $this->respondWithSuccess($tasks);
     }
 
-    // Récupérer une tâche spécifique
     public function show($id)
     {
         $task = Task::find($id);
-
+        $user = auth()->user();
         if (!$task) {
             return $this->respondWithError('Tâche non trouvée', 404);
         }
 
-        return $this->respondWithSuccess($task);
+        if($task->user_id == $user->id){
+            return $this->respondWithSuccess($task);
+        } else{
+            return $this->respondWithError('Unautorized', 401);
+        }
     }
 
     // Create new task
