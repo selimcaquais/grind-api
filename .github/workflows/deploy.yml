@@ -1,0 +1,41 @@
+name: Deploy to Preproduction
+
+on:
+  workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check git repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install PHP and dependencies
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2' 
+          extensions: mbstring, pdo, tokenizer, xml, curl, bcmath
+          tools: composer
+
+      # Install composer dependencies
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      # Build app
+      - name: Build application
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      # Deploy on preprod
+      - name: Deploy to Preproduction
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          rsync -avz --exclude 'node_modules' --exclude '.git' ./ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
