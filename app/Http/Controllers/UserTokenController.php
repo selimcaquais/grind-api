@@ -21,12 +21,13 @@ class UserTokenController extends Controller
             // get ENV variable
             $salt = env('TOKEN_SALT');
             $key = env('MAIL_KEY');
+
             // decrypt email
-            // $data = base64_decode($request->email);
-            // $iv = substr($data, 0, openssl_cipher_iv_length('aes-256-cbc'));
-            // $ciphertext = substr($data, openssl_cipher_iv_length('aes-256-cbc'));
-            // $decryptedEmail = openssl_decrypt($ciphertext, 'aes-256-cbc', $key, 0, $iv);
-            $decryptedEmail = $request->email;
+            $data = base64_decode($request->email);
+            $iv = substr($data, 0, openssl_cipher_iv_length('aes-256-cbc'));
+            $ciphertext = substr($data, openssl_cipher_iv_length('aes-256-cbc'));
+            $decryptedEmail = openssl_decrypt($ciphertext, 'aes-256-cbc', $key, 0, $iv);
+
             // find user with this email
             $user = User::where('email', $decryptedEmail)->first();
 
@@ -71,7 +72,7 @@ class UserTokenController extends Controller
             // get env variable
             $salt = env('TOKEN_SALT');
             $tokenToVerify = hash('sha256',$resetPasswordOrEmailToken . $salt);
-
+            
             $user = User::where('email', $decryptedEmail)->first();
             if (!$user)  return 400;
 

@@ -81,16 +81,16 @@ class UserController extends Controller
             $tokenAndEmail = urldecode($request->token);
 
             //explode email and token
-            list($resetPasswordOrEmailToken, $decryptedEmail) = explode('&&', $tokenAndEmail);
+            list($resetPasswordOrEmailToken, $emailCrypted) = explode('&&', $tokenAndEmail);
 
             // decrypted email
-            // $data = base64_decode($emailCrypted);
-            // $iv = substr($data, 0, openssl_cipher_iv_length('aes-256-cbc'));
-            // $ciphertext = substr($data, openssl_cipher_iv_length('aes-256-cbc'));
-            // $decryptedEmail = openssl_decrypt($ciphertext, 'aes-256-cbc', env('MAIL_KEY'), 0, $iv);
+            $data = base64_decode($emailCrypted);
+            $iv = substr($data, 0, openssl_cipher_iv_length('aes-256-cbc'));
+            $ciphertext = substr($data, openssl_cipher_iv_length('aes-256-cbc'));
+            $decryptedEmail = openssl_decrypt($ciphertext, 'aes-256-cbc', env('MAIL_KEY'), 0, $iv);
 
             $user = User::where('email', $decryptedEmail)->first();
-
+            
             $verifyToken = UserTokenController::verifyToken($resetPasswordOrEmailToken, $decryptedEmail);
 
             if ($verifyToken == 200) {
