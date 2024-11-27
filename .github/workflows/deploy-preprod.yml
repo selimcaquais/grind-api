@@ -33,3 +33,23 @@ jobs:
           server: ${{ secrets.FTP_PREPROD_SERVER }}
           username: ${{ secrets.FTP_PREPROD_USERNAME }}
           password: ${{ secrets.FTP_PREPROD_PASSWORD }}
+          exclude: |
+            /vendor/
+            .git/
+            node_modules/
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.O2SWITCH_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Install dependencies on server
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa wowa0489@preprod.grind-api.fr "
+          cd preprod.grind-api &&
+          composer install --no-dev --optimize-autoloader &&
+          php artisan config:cache &&
+          php artisan route:cache &&
+          php artisan view:cache
+          "
