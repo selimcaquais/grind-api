@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -28,18 +28,8 @@ jobs:
           php artisan view:cache
 
       - name: Deploy to Preprod
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.O2SWITCH_SSH_PRIVATE_KEY }}
-          DEPLOY_PATH_PREPROD: ${{ secrets.DEPLOY_PATH_PREPROD }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H o2switch.net >> ~/.ssh/known_hosts
-          rsync -avz --delete --exclude='.env' ./ "$DEPLOY_PATH_PREPROD"
-
-      - name: Clean up cache on server
-        env:
-          DEPLOY_PATH_PREPROD: ${{ secrets.DEPLOY_PATH_PREPROD }}
-        run: |
-          ssh o2switch.net "cd $DEPLOY_PATH_PREPROD && php artisan config:clear && php artisan cache:clear && php artisan route:clear"
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_PREPROD_SERVER }}
+          username: ${{ secrets.FTP_PREPROD_USERNAME }}
+          password: ${{ secrets.FTP_PREPROD_PASSWORD }}
